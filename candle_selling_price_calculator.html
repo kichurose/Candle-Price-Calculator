@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Candle Selling Price Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      background: #fff;
+      padding: 20px;
+      margin: auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .result {
+      margin-top: 20px;
+      background: #eef6ee;
+      padding: 15px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Candle Price Calculator</h2>
+
+    <div style="display:flex; gap:20px; flex-wrap:wrap;">
+
+      <!-- LEFT: User Inputs -->
+      <div style="flex:1; min-width:280px;">
+        <label>Total Candle Weight (grams)</label>
+        <input type="number" id="candleWeight" placeholder="Eg: 200" />
+
+        <label>Soy Wax Used (grams)</label>
+        <input type="number" id="soyWaxGrams" placeholder="Eg: 120" />
+
+        <label>Gel Wax Used (grams)</label>
+        <input type="number" id="gelWaxGrams" placeholder="Eg: 80" />
+
+        <label>Fragrance Oil Used (ml)</label>
+        <input type="number" id="fragranceMl" placeholder="Eg: 20" />
+
+        <label>Jar + Packaging Cost (₹)</label>
+        <input type="number" id="packagingCost" placeholder="Eg: 70" />
+
+        <label>Labor Time per Candle (hours)</label>
+        <input type="number" id="laborHours" placeholder="Eg: 0.25" />
+
+        <label>Overhead Cost per Candle (₹)</label>
+        <input type="number" id="overheadCost" placeholder="Eg: 20" />
+
+        <label>Desired Profit Markup (%)</label>
+        <input type="number" id="profitMarkup" placeholder="Eg: 50" />
+
+        <button id="calculateBtn">Calculate Selling Price</button>
+
+        <div class="result" id="result" style="display:none"></div>
+      </div>
+
+      <!-- RIGHT: Editable Base Values -->
+      <div style="flex:1; min-width:280px; background:#f3f3f3; padding:15px; border-radius:6px;">
+        <h3>Base Material & Labor Rates</h3>
+
+        <label>Soy Wax Price (₹ per kg)</label>
+        <input type="number" id="soyWaxPrice" value="500" />
+
+        <label>Fragrance Oil Price (₹ per ml)</label>
+        <input type="number" id="fragrancePricePerMl" value="7.166" />
+
+        <label>Labor Cost (₹ per hour)</label>
+        <input type="number" id="laborPerHour" value="200" />
+
+        <label>Gel Wax Price (₹ per 500 g)</label>
+        <input type="number" id="gelWaxPriceHalfKg" value="325" />
+
+        <p style="font-size:13px; color:#555; margin-top:10px;">
+          Edit these when supplier or labor costs change.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Attach event safely after DOM is loaded
+    document.getElementById('calculateBtn').addEventListener('click', calculatePrice);
+
+    function calculatePrice() {
+      const candleWeight = Number(document.getElementById('candleWeight').value);
+      const fragranceMl = Number(document.getElementById('fragranceMl').value);
+      const packagingCost = Number(document.getElementById('packagingCost').value);
+      const laborHours = Number(document.getElementById('laborHours').value);
+      const overheadCost = Number(document.getElementById('overheadCost').value);
+      const profitMarkup = Number(document.getElementById('profitMarkup').value);
+
+      const soyWaxPricePerKg = Number(document.getElementById('soyWaxPrice').value);
+      const gelWaxPriceHalfKg = Number(document.getElementById('gelWaxPriceHalfKg').value);
+      const fragrancePricePerMl = Number(document.getElementById('fragrancePricePerMl').value);
+      const laborCostPerHour = Number(document.getElementById('laborPerHour').value);
+
+      const soyWaxGrams = Number(document.getElementById('soyWaxGrams').value) || 0;
+      const gelWaxGrams = Number(document.getElementById('gelWaxGrams').value) || 0;
+
+      if (candleWeight <= 0 || profitMarkup <= 0) {
+        alert('Please enter candle weight and profit markup');
+        return;
+      }
+
+      if ((soyWaxGrams + gelWaxGrams) !== candleWeight) {
+        alert('Soy wax grams + Gel wax grams must equal total candle weight');
+        return;
+      }
+
+      const soyWaxCost = (soyWaxPricePerKg / 1000) * soyWaxGrams;
+      const gelWaxCost = (gelWaxPriceHalfKg / 500) * gelWaxGrams;
+      const waxCost = soyWaxCost + gelWaxCost;
+      const fragranceCost = fragrancePricePerMl * fragranceMl;
+      const laborCost = laborCostPerHour * laborHours;
+
+      const totalCost = waxCost + fragranceCost + packagingCost + laborCost + overheadCost;
+      const profitAmount = totalCost * (profitMarkup / 100);
+      const sellingPrice = totalCost + profitAmount;
+
+      const resultDiv = document.getElementById('result');
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = `
+        <strong>Cost Breakdown</strong><br/><br/>
+        Soy Wax Cost: ₹${soyWaxCost.toFixed(2)}<br/>
+        Gel Wax Cost: ₹${gelWaxCost.toFixed(2)}<br/>
+        Total Wax Cost: ₹${waxCost.toFixed(2)}<br/>
+        Fragrance Cost: ₹${fragranceCost.toFixed(2)}<br/>
+        Packaging: ₹${packagingCost.toFixed(2)}<br/>
+        Labor: ₹${laborCost.toFixed(2)}<br/>
+        Overheads: ₹${overheadCost.toFixed(2)}<br/><br/>
+
+        <strong>Total Cost:</strong> ₹${totalCost.toFixed(2)}<br/>
+        <strong>Profit (Markup ${profitMarkup}%):</strong> ₹${profitAmount.toFixed(2)}<br/>
+        <strong>Selling Price:</strong> ₹${Math.ceil(sellingPrice)}<br/><br/>
+
+        <em>Markup formula:</em><br/>
+        Selling Price = Cost + (Cost × Markup%)<br/><br/>
+
+        <em>For comparison (Margin):</em><br/>
+        Margin % = Profit ÷ Selling Price × 100 = ${((profitAmount / sellingPrice) * 100).toFixed(2)}%
+      `;
+    }
+
+    // Simple sanity test (can be removed later)
+    console.assert(typeof calculatePrice === 'function', 'calculatePrice should be defined');
+  </script>
+</body>
+</html>
